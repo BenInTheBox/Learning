@@ -4,6 +4,8 @@
       <w>openiastuff</w>
       <w>relu</w>
       <w>softmax</w>
+      <w>testset</w>
+      <w>trainset</w>
     </words>
   </dictionary>
 </component>
