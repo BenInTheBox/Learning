@@ -4,6 +4,7 @@ from torchvision import transforms, datasets
 import matplotlib.pyplot as plt
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 
 ''' ----- Data preparation ----- '''
 # Data set
@@ -56,6 +57,7 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         x = self.fc4(x)
+        # Can create NN with the first layers dedicated to processing and the next ones for computing
 
         return F.log_softmax(x, dim=1)  # Will receive batchs so dim(=axis) is needed to explain witch direction is the distribution
 
@@ -66,3 +68,35 @@ X = torch.rand((28, 28))
 X = X.view(-1, 28*28)
 output = net(X)
 print(output)
+optimizer = optim.Adam(net.parameters(), lr=0.001)  # optimizer, can use decaying learning rate for better perf
+
+EPOCHS = 3 # Number of time that the whole dataset is used to train
+
+for epoch in range(EPOCHS):
+    for data in trainset:
+        # Data is a batch of feature sets and labels
+        X, y = data
+        net.zero_grad() # reset the gradient between batch
+        output = net(X.view(-1, 28*28))
+        loss = F.nll_loss(output, y)  # For scaler value use nll_loss, if vector mean squared errors
+        loss.backward()
+        optimizer.step()
+    print(loss)
+
+correct = 0
+total = 0
+
+with torch.no_grad():
+    for data in trainset:
+        X, y = data
+        output = net(X.view(-1, 784))
+        for idx, i in enumerate(output):
+            if torch.argmax(i) == y[idx]:
+                correct += 1
+            total += 1
+
+print("Accuracy: ", round(correct/total, 3))
+
+plt.imshow(X[0].view(28, 28))
+plt.show()
+print(torch.argmax(net(X[0].view(-1, 784))[0]))
