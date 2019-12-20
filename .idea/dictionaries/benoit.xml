@@ -2,6 +2,9 @@
   <dictionary name="benoit">
     <words>
       <w>batchs</w>
+      <w>catcount</w>
+      <w>dogcount</w>
+      <w>dogsvcats</w>
       <w>openiastuff</w>
       <w>pytorch</w>
       <w>relu</w>
