@@ -55,4 +55,4 @@ training_data = np.load("training_data.npy", allow_pickle=True)
 print(len(training_data))
 print(training_data[1])
 plt.imshow(training_data[3][0], cmap="gray")
-plt.show()
+plt.show()  #
