@@ -11,6 +11,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm
+import torch.optim as optim
 
 REBUILD_DATA = False  # To not reprocess the data every time
 
@@ -96,4 +97,53 @@ class Net(nn.Module):
         return F.softmax(x, dim=1)  # dim for the batches
 
 
-net = Net()  # 21:47 Vidéo 6
+net = Net()
+
+optimizer = optim.Adam(net.parameters(), lr=0.0001)
+loss_function = nn.MSELoss()
+
+X = torch.Tensor([i[0] for i in training_data]).view(-1, 50, 50)
+X = X/255.0
+y = torch.Tensor([i[1] for i in training_data])
+
+VAL_PCT = 0.1
+val_size = int(len(X)*VAL_PCT)
+print(val_size)  # Validation test size
+
+# Train/Test samples
+train_X = X[:-val_size]
+train_y = y[:-val_size]
+test_X = X[-val_size:]
+test_y = y[-val_size:]
+print(len(train_X))
+print(len(test_X))
+
+BATCH_SIZE = 100  # Change if memory error
+EPOCHS = 1
+
+for epoch in range(EPOCHS):
+    for i in tqdm(range(0, len(train_X), BATCH_SIZE)):
+        # print(i, i+BATCH_SIZE)
+        batch_X = train_X[i:i+BATCH_SIZE].view(-1, 1, 50, 50)
+        batch_y = train_y[i:i+BATCH_SIZE]
+
+        net.zero_grad()
+        # optimizer.zero_grad() can be used if there is multiples optimizer working on different parts of a big NN
+        outputs = net(batch_X)
+        loss = loss_function(outputs, batch_y)
+        loss.backward()
+        optimizer.step()
+
+print(loss)
+
+correct = 0
+total = 0
+with torch.no_grad():
+    for i in tqdm(range(len(test_X))):
+        real_class = torch.argmax(test_y[i])
+        net_out = net(test_X[i].view(-1, 1, 50, 50))[0]
+        predicted_class = torch.argmax(net_out)
+        if predicted_class == real_class:
+            correct += 1
+        total += 1
+print("Accuracy: ", round(correct/total, 3))
